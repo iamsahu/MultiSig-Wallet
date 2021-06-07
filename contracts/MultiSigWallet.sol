@@ -22,6 +22,7 @@ contract MultiSigWallet{
     event RequestExecuted(uint requestID);
     event RequestApproved(uint requestID,address approver);
     event RevokeApproval(uint requestID,address revoker);
+    event AmountDeposited(address sender,uint value);
 
     // receive() external payable {}
 
@@ -54,7 +55,9 @@ contract MultiSigWallet{
         require(!transactions[_txIndex].executed,"Request already executed");
         _;
     }
-
+    function () external payable{
+        emit AmountDeposited(msg.sender, msg.value);
+    }
     function raiseRequest(uint amount,address _to) public onlyOwner{
         transactions.push(Transaction({
             requester : msg.sender,
@@ -72,7 +75,10 @@ contract MultiSigWallet{
     function executeRequest(uint _requestID) public onlyOwner requestExists(_requestID) requestExecuted(_requestID){
         require(transactions[_requestID].requester==msg.sender,"Only the requester can execute this transaction");
         require(transactions[_requestID].confirmationCount>=countForConsensus,"There are not enough confirmation");
-        
+        Transaction memory temp = transactions[_requestID];
+
+        (bool success,) = temp.to.call.value(temp.value)("");
+        require(success,"Transaction failed");
         transactions[_requestID].executed = true;
         emit RequestExecuted(_requestID);
     }
