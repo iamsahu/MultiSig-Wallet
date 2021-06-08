@@ -83,7 +83,7 @@ contract MultiSigWallet{
         transactions[_requestID].executed = true;
         emit RequestExecuted(_requestID);
     }
-
+ 
     function approveRequest(uint _requestID) public onlyOwner requestExists(_requestID) requestExecuted(_requestID){
         require(!transactions[_requestID].isApproved[msg.sender],"You have already approved the request!");
 
