@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: MIT
 pragma solidity >=0.4.21 <0.7.0;
 
 contract MultiSigWallet{
@@ -27,7 +28,7 @@ contract MultiSigWallet{
     // receive() external payable {}
 
     // fallback() external payable {}
-
+//["0x5B38Da6a701c568545dCfcB03FcB875f56beddC4","0xAb8483F64d9C6d1EcF9b849Ae677dD3315835cb2"]
     constructor (address[] memory _owners,uint _countForConsensus) public {
         require(_owners.length>0,"You should supply some owners");
         require(_countForConsensus>0 ,"Consensus count should be >0");
@@ -55,7 +56,7 @@ contract MultiSigWallet{
         require(!transactions[_txIndex].executed,"Request already executed");
         _;
     }
-    function () external payable{
+    function deposit () external payable{
         emit AmountDeposited(msg.sender, msg.value);
     }
     function raiseRequest(uint amount,address _to) public onlyOwner{
@@ -77,7 +78,7 @@ contract MultiSigWallet{
         require(transactions[_requestID].confirmationCount>=countForConsensus,"There are not enough confirmation");
         Transaction memory temp = transactions[_requestID];
 
-        (bool success,) = temp.to.call.value(temp.value)("");
+        (bool success,) = temp.to.call{value:temp.value}("");
         require(success,"Transaction failed");
         transactions[_requestID].executed = true;
         emit RequestExecuted(_requestID);
